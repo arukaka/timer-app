@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <title>Study Timer - Calming Background</title>
+  </head>
+  <body>
+    <div class="animated-background">
+      <!-- Floating particles -->
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+
+      <!-- Gentle waves -->
+      <div class="wave"></div>
+      <div class="wave"></div>
+      <div class="wave"></div>
+
+      <!-- Pulse orbs -->
+      <div class="pulse-orb"></div>
+      <div class="pulse-orb"></div>
+      <div class="pulse-orb"></div>
+    </div>
+    <div class="animated-background">
+      <!-- Floating particles -->
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+
+      <!-- Gentle waves -->
+      <div class="wave"></div>
+      <div class="wave"></div>
+      <div class="wave"></div>
+
+      <!-- Pulse orbs -->
+      <div class="pulse-orb"></div>
+      <div class="pulse-orb"></div>
+      <div class="pulse-orb"></div>
+    </div>
+
+    <!-- Demo content -->
+    <div class="content">
+      <div class="container">
+        <div class="timer-settings" id="timerSettings">
+          <div class="settings-title">Timer Settings</div>
+          <div class="time-inputs">
+            <div class="input-group">
+              <label class="input-label">Focus Time(min)</label>
+              <input
+                type="number"
+                class="time-input"
+                id="focusMinutes"
+                min="1"
+                max="60"
+                value="25"
+                placeholder="25"
+              />
+            </div>
+            <div class="input-group">
+              <label class="input-label">Short Break(min)</label>
+              <input
+                type="number"
+                class="time-input"
+                id="shortBreakMinutes"
+                min="1"
+                max="30"
+                value="5"
+                placeholder="5"
+              />
+            </div>
+            <div class="input-group">
+              <label class="input-label">Long Break(min)</label>
+              <input
+                type="number"
+                class="time-input"
+                id="longBreakMinutes"
+                min="1"
+                max="60"
+                value="15"
+                placeholder="15"
+              />
+            </div>
+            <div class="input-group goal">
+              <label class="input-label">Goal(Hrs)</label>
+              <input
+                type="number"
+                class="time-input"
+                id="goalHrs"
+                min="1"
+                max="10"
+                value="5"
+                placeholder="5"
+              />
+            </div>
+          </div>
+          <button class="apply-btn" id="applySettings">Apply Settings</button>
+        </div>
+
+        <div class="timer-demo focus-mode" id="timerDemo">
+          <button class="settings-toggle" id="settingsToggle">
+            ⚙️ Settings
+          </button>
+
+          <div class="session-indicator">
+            <div class="session-type" id="sessionType">Focus Session</div>
+            <div class="session-counter" id="sessionCounter">
+              Session 1 of 4
+            </div>
+          </div>
+
+          <div class="timer-display" id="timerDisplay">25:00</div>
+          <div class="timer-label" id="timerLabel">Focus Time</div>
+          <div class="btn-container">
+            <button class="timer-btn start" id="startBtn">Start</button>
+            <button class="timer-btn pause" id="pauseBtn" disabled>
+              Pause
+            </button>
+            <button class="timer-btn stop" id="stopBtn" disabled>Stop</button>
+          </div>
+        </div>
+
+        <div class="stats-block">
+          <div class="stats-title">Total Study Time Today</div>
+          <div class="total-time" id="totalTime">0h 00m</div>
+          <div class="stats-subtitle">Keep up the great work!</div>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              id="progressFill"
+              style="width: 0%"
+            ></div>
+          </div>
+          <div class="progress-text">0% of daily goal (5 hours)</div>
+        </div>
+      </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
