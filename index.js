@@ -47,14 +47,14 @@ function updateSessionInfo() {
     timerLabel.text(isLongBreak ? "Long Break Time" : "Short Break Time");
     timerDemo.removeClass("focus-mode");
     timerDemo.addClass("break-mode");
-    new Audio("../keepup-sound.mp3").play();
+    new Audio("./assets/keepup-sound.mp3").play();
     startBtn.click();
   } else {
     sessionType.text("Focus Session");
     timerLabel.text("Focus Time");
     timerDemo.removeClass("break-mode");
     timerDemo.addClass("focus-mode");
-    new Audio("../step-into-clarity.mp3").play();
+    new Audio("./assets/step-into-clarity.mp3").play();
   }
   sessionCounter.text(`Session ${currentSession} of ${maxSessions}`);
 }
@@ -134,7 +134,7 @@ function runTimer() {
     currentSeconds = 59;
   } else {
     if (currentMinutes === 0 && currentSeconds == 13) {
-      new Audio("../end-sound.mp3").play();
+      new Audio("./assets/end-sound.mp3").play();
     }
     currentSeconds -= 6;
   }
@@ -162,7 +162,7 @@ function saveTimerState() {
 
 startBtn.on("click", () => {
   if (timerState === "stopped") {
-    new Audio("../start-sound.mp3").play();
+    new Audio("./assets/start-sound.mp3").play();
     timerState = "running";
     timerDemo.addClass("running");
     timerDemo.removeClass("paused");
