@@ -28,7 +28,7 @@ To test or modify the app on your local machine:
 git clone https://github.com/arukaka/timer-app.git
 cd timer-app
 # Then open index.html in your browser
-
+```
 ## 🌐 Live Demo
 
 Check out the live version here:
