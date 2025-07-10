@@ -1,4 +1,4 @@
-# ⏱️ Focus Timer App
+# ⏱️ Focus Timer App (vibe coding rocks 🤘)
 
 A clean and customizable productivity timer based on the Pomodoro technique. This web app helps you structure your work sessions with configurable focus and break times, session tracking, and progress monitoring toward a daily goal — all in a smooth, user-friendly interface.
 
