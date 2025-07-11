@@ -50,7 +50,7 @@ function updateSessionInfo() {
     timerLabel.text(isLongBreak ? "Long Break Time" : "Short Break Time");
     timerDemo.removeClass("focus-mode");
     timerDemo.addClass("break-mode");
-    new Audio("./assets/keepup-sound.mp3").play();
+    //new Audio("./assets/keepup-sound.mp3").play();
     //startBtn.click();
   } else {
     sessionType.text("Focus Session");
