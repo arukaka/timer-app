@@ -1,4 +1,7 @@
 // Timer configuration
+let startTimestamp = null;
+let endTimestamp = null;
+let animationFrameId = null;
 let focusTime = 25; // minutes
 let shortBreakTime = 5; // minutes
 let longBreakTime = 15; // minutes
@@ -109,37 +112,43 @@ function startNextSession() {
 }
 
 function runTimer() {
-  if (currentSeconds <= 0) {
-    if (currentMinutes === 0) {
-      // Timer finished
-      clearInterval(timerInterval);
-      timerState = "stopped";
-      startBtn.text("Start");
-      startBtn.attr("disabled", false);
-      pauseBtn.attr("disabled", true);
-      stopBtn.attr("disabled", true);
-      pauseBtn.text("Pause");
-      timerDemo.removeClass("running", "paused");
+  const now = Date.now();
+  let remainingMs = endTimestamp - now;
 
-      // Auto-start next session
-      startNextSession();
+  if (remainingMs <= 0) {
+    cancelAnimationFrame(animationFrameId);
+    timerState = "stopped";
+    startBtn.text("Start");
+    startBtn.attr("disabled", false);
+    pauseBtn.attr("disabled", true);
+    stopBtn.attr("disabled", true);
+    pauseBtn.text("Pause");
+    timerDemo.removeClass("running", "paused");
 
-      // Show completion notification
-      const completedSession = isBreakTime ? "Focus session" : "Break";
-      alert(`${completedSession} completed! Starting next session.`);
+    currentMinutes = 0;
+    currentSeconds = 0;
+    updateTimerDisplay();
+    saveTimerState();
 
-      return;
-    }
-    currentMinutes--;
-    currentSeconds = 59;
-  } else {
-    if (currentMinutes === 0 && currentSeconds == 13) {
-      new Audio("./assets/end-sound.mp3").play();
-    }
-    currentSeconds--;
+    startNextSession();
+
+    const completedSession = isBreakTime ? "Focus session" : "Break";
+    alert(`${completedSession} completed! Starting next session.`);
+    return;
   }
+
+  const totalSecondsLeft = Math.floor(remainingMs / 1000);
+  currentMinutes = Math.floor(totalSecondsLeft / 60);
+  currentSeconds = totalSecondsLeft % 60;
+
+  if (currentMinutes === 0 && currentSeconds === 13) {
+    new Audio("./assets/end-sound.mp3").play();
+  }
+
   updateTimerDisplay();
   saveTimerState();
+
+  animationFrameId = requestAnimationFrame(runTimer);
 }
 
 function saveTimerState() {
@@ -161,25 +170,20 @@ function saveTimerState() {
 }
 
 startBtn.on("click", () => {
-  if (timerState === "stopped") {
-    new Audio("./assets/start-sound.mp3").play();
+  if (timerState === "stopped" || timerState === "paused") {
+    const totalTimeMs = (currentMinutes * 60 + currentSeconds) * 1000;
+    startTimestamp = Date.now();
+    endTimestamp = startTimestamp + totalTimeMs;
+
     timerState = "running";
     timerDemo.addClass("running");
     timerDemo.removeClass("paused");
     startBtn.attr("disabled", true);
     pauseBtn.attr("disabled", false);
     stopBtn.attr("disabled", false);
-
-    timerInterval = setInterval(runTimer, 1000);
-  } else if (timerState === "paused") {
-    timerState = "running";
-    timerDemo.addClass("running");
-    timerDemo.removeClass("paused");
-    startBtn.attr("disabled", true);
-    pauseBtn.attr("disabled", false);
-    // pauseBtn.text("Pause");
-    startBtn.text("start");
-    timerInterval = setInterval(runTimer, 1000);
+    startBtn.text("Start");
+    new Audio("./assets/start-sound.mp3").play();
+    animationFrameId = requestAnimationFrame(runTimer);
   }
   pauseBtn.fadeIn(500);
 });
@@ -191,10 +195,15 @@ pauseBtn.on("click", () => {
     timerDemo.addClass("paused");
     startBtn.attr("disabled", false);
     startBtn.text("Resume");
-    // pauseBtn.text("Resume");
     pauseBtn.fadeOut(500);
+
+    const now = Date.now();
+    const remaining = endTimestamp - now;
+    currentMinutes = Math.floor(remaining / 1000 / 60);
+    currentSeconds = Math.floor((remaining / 1000) % 60);
+
+    cancelAnimationFrame(animationFrameId);
     saveTimerState();
-    clearInterval(timerInterval);
   }
 });
 
@@ -205,9 +214,8 @@ stopBtn.on("click", () => {
   startBtn.attr("disabled", false);
   pauseBtn.attr("disabled", true);
   stopBtn.attr("disabled", true);
-  //pauseBtn.text("Pause");
   pauseBtn.fadeIn(500);
-  clearInterval(timerInterval);
+  cancelAnimationFrame(animationFrameId);
   resetTimer();
   localStorage.removeItem("timerState");
 });
@@ -236,49 +244,59 @@ applySettings.on("click", () => {
 function loadTimerState() {
   const saved = localStorage.getItem("timerState");
   if (saved) {
-    const state = JSON.parse(saved);
+    try {
+      const state = JSON.parse(saved);
 
-    focusTime = state.focusTime || 25;
-    shortBreakTime = state.shortBreakTime || 5;
-    longBreakTime = state.longBreakTime || 15;
-    goalTime = state.goalTime || 5;
-    currentSession = state.currentSession || 1;
-    isBreakTime = state.isBreakTime || false;
-    currentMinutes =
-      state.currentMinutes === 0 ? 0 : state.currentMinutes || focusTime;
-    currentSeconds = state.currentSeconds || 0;
-    timerState = state.timerState || "stopped";
-    totalStudyMinutes = state.totalStudyMinutes || 0;
-    // console.log(timerState);
-    const now = Date.now();
-    const elapsed = Math.floor((now - state.lastUpdated) / 1000); // in seconds
+      // Load with fallbacks
+      focusTime = state.focusTime ?? 25;
+      shortBreakTime = state.shortBreakTime ?? 5;
+      longBreakTime = state.longBreakTime ?? 15;
+      goalTime = state.goalTime ?? 5;
+      currentSession = state.currentSession ?? 1;
+      isBreakTime = state.isBreakTime ?? false;
+      currentMinutes = state.currentMinutes ?? focusTime;
+      currentSeconds = state.currentSeconds ?? 0;
+      timerState = state.timerState ?? "stopped";
+      totalStudyMinutes = state.totalStudyMinutes ?? 0;
 
-    if (timerState === "running") {
-      let totalSeconds = currentMinutes * 60 + currentSeconds - elapsed;
-      if (totalSeconds <= 0) {
-        startNextSession(); // If time's up, go to next session
-      } else {
-        currentMinutes = Math.floor(totalSeconds / 60);
-        currentSeconds = totalSeconds % 60;
-        timerInterval = setInterval(runTimer, 1000);
+      // calculate elapsed time
+      const now = Date.now();
+      const elapsed = Math.floor((now - (state.lastUpdated ?? now)) / 1000);
+
+      if (timerState === "running") {
+        const totalSavedSeconds =
+          (state.currentMinutes ?? 0) * 60 + (state.currentSeconds ?? 0);
+        const remainingSeconds = totalSavedSeconds - elapsed;
+
+        if (remainingSeconds <= 0) {
+          startNextSession();
+        } else {
+          currentMinutes = Math.floor(remainingSeconds / 60);
+          currentSeconds = remainingSeconds % 60;
+          startTimestamp = now;
+          endTimestamp = now + remainingSeconds * 1000;
+          animationFrameId = requestAnimationFrame(runTimer);
+        }
       }
-    }
 
-    // Update UI based on loaded state
-    updateSessionInfo();
-    updateTimerDisplay();
-    updateTotalTime();
+      updateSessionInfo();
+      updateTimerDisplay();
+      updateTotalTime();
 
-    if (timerState === "running") {
-      timerDemo.addClass("running");
-      startBtn.attr("disabled", true);
-      pauseBtn.attr("disabled", false);
-      stopBtn.attr("disabled", false);
-    } else if (timerState === "paused") {
-      startBtn.text("Resume");
-      pauseBtn.fadeOut(500);
-      startBtn.attr("disabled", false);
-      stopBtn.attr("disabled", false);
+      if (timerState === "running") {
+        timerDemo.addClass("running");
+        startBtn.attr("disabled", true);
+        pauseBtn.attr("disabled", false);
+        stopBtn.attr("disabled", false);
+      } else if (timerState === "paused") {
+        startBtn.text("Resume");
+        pauseBtn.fadeOut(500);
+        startBtn.attr("disabled", false);
+        stopBtn.attr("disabled", false);
+      }
+    } catch (e) {
+      console.error("Error loading timer state:", e);
+      localStorage.removeItem("timerState"); // clean up bad data
     }
   }
 }
