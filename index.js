@@ -136,7 +136,7 @@ function runTimer() {
     if (currentMinutes === 0 && currentSeconds == 13) {
       new Audio("./assets/end-sound.mp3").play();
     }
-    currentSeconds -= 6;
+    currentSeconds--;
   }
   updateTimerDisplay();
   saveTimerState();
