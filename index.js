@@ -165,7 +165,7 @@ function saveTimerState() {
     totalStudyMinutes,
     lastUpdated: Date.now(),
   };
-  console.log(state.timerState);
+ // console.log(state.timerState);
   localStorage.setItem("timerState", JSON.stringify(state));
 }
 
