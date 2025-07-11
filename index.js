@@ -51,7 +51,7 @@ function updateSessionInfo() {
     timerDemo.removeClass("focus-mode");
     timerDemo.addClass("break-mode");
     new Audio("./assets/keepup-sound.mp3").play();
-    startBtn.click();
+    //startBtn.click();
   } else {
     sessionType.text("Focus Session");
     timerLabel.text("Focus Time");
