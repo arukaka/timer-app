@@ -12,6 +12,8 @@ let currentMinutes = focusTime;
 let currentSeconds = 0;
 let timerInterval;
 let goalTime = 5; //hours
+let todayDate = new Date().getDate();
+let playEnd = true;
 
 const timerDemo = $("#timerDemo");
 const timerDisplay = $("#timerDisplay");
@@ -39,7 +41,6 @@ function updateTimerDisplay() {
   const displayMinutes = String(currentMinutes).padStart(2, "0");
   const displaySeconds = String(currentSeconds).padStart(2, "0");
   timerDisplay.text(`${displayMinutes}:${displaySeconds}`);
-  const progressText = $(".progress-text");
   updateTotalTime();
 }
 
@@ -107,6 +108,7 @@ function startNextSession() {
     totalStudyMinutes += focusTime; // Add completed focus time
     updateTotalTime();
   }
+  playEnd = true;
   updateSessionInfo();
   resetTimer();
 }
@@ -114,7 +116,6 @@ function startNextSession() {
 function runTimer() {
   const now = Date.now();
   let remainingMs = endTimestamp - now;
-
   if (remainingMs <= 0) {
     cancelAnimationFrame(animationFrameId);
     timerState = "stopped";
@@ -127,22 +128,21 @@ function runTimer() {
 
     currentMinutes = 0;
     currentSeconds = 0;
+
+    startNextSession();
     updateTimerDisplay();
     saveTimerState();
 
-    startNextSession();
-
     const completedSession = isBreakTime ? "Focus session" : "Break";
-    alert(`${completedSession} completed! Starting next session.`);
+    // alert(`${completedSession} completed! Starting next session.`);
     return;
-  }
-
-  const totalSecondsLeft = Math.floor(remainingMs / 1000);
-  currentMinutes = Math.floor(totalSecondsLeft / 60);
-  currentSeconds = totalSecondsLeft % 60;
-
-  if (currentMinutes === 0 && currentSeconds === 13) {
+  } else if (remainingMs <= 13000 && playEnd) {
     new Audio("./assets/end-sound.mp3").play();
+    playEnd = false;
+  } else {
+    const totalSecondsLeft = Math.floor(remainingMs / 1000);
+    currentMinutes = Math.floor(totalSecondsLeft / 60);
+    currentSeconds = totalSecondsLeft % 60;
   }
 
   updateTimerDisplay();
@@ -164,8 +164,9 @@ function saveTimerState() {
     timerState,
     totalStudyMinutes,
     lastUpdated: Date.now(),
+    todayDate: new Date().getDate(),
   };
- // console.log(state.timerState);
+  // console.log(state.timerState);
   localStorage.setItem("timerState", JSON.stringify(state));
 }
 
@@ -217,7 +218,7 @@ stopBtn.on("click", () => {
   pauseBtn.fadeIn(500);
   cancelAnimationFrame(animationFrameId);
   resetTimer();
-  localStorage.removeItem("timerState");
+  //localStorage.removeItem("timerState");
 });
 
 settingsToggle.on("click", () => {
@@ -258,24 +259,35 @@ function loadTimerState() {
       currentSeconds = state.currentSeconds ?? 0;
       timerState = state.timerState ?? "stopped";
       totalStudyMinutes = state.totalStudyMinutes ?? 0;
+      todayDate = state.todayDate ?? new Date().getDate();
 
-      // calculate elapsed time
-      const now = Date.now();
-      const elapsed = Math.floor((now - (state.lastUpdated ?? now)) / 1000);
+      const newDay = new Date().getDate();
+      if (todayDate != newDay) {
+        isBreakTime = false;
+        //todayDate = now;
+        currentSession = 1;
+        totalStudyMinutes = 0;
+        localStorage.removeItem("timerState");
+        cancelAnimationFrame(animationFrameId);
+      } else {
+        // calculate elapsed time
+        const now = Date.now();
+        const elapsed = Math.floor((now - (state.lastUpdated ?? now)) / 1000);
 
-      if (timerState === "running") {
-        const totalSavedSeconds =
-          (state.currentMinutes ?? 0) * 60 + (state.currentSeconds ?? 0);
-        const remainingSeconds = totalSavedSeconds - elapsed;
+        if (timerState === "running") {
+          const totalSavedSeconds =
+            (state.currentMinutes ?? 0) * 60 + (state.currentSeconds ?? 0);
+          const remainingSeconds = totalSavedSeconds - elapsed;
 
-        if (remainingSeconds <= 0) {
-          startNextSession();
-        } else {
-          currentMinutes = Math.floor(remainingSeconds / 60);
-          currentSeconds = remainingSeconds % 60;
-          startTimestamp = now;
-          endTimestamp = now + remainingSeconds * 1000;
-          animationFrameId = requestAnimationFrame(runTimer);
+          if (remainingSeconds <= 0) {
+            startNextSession();
+          } else {
+            currentMinutes = Math.floor(remainingSeconds / 60);
+            currentSeconds = remainingSeconds % 60;
+            startTimestamp = now;
+            endTimestamp = now + remainingSeconds * 1000;
+            animationFrameId = requestAnimationFrame(runTimer);
+          }
         }
       }
 
